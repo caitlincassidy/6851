@@ -1,0 +1,114 @@
+<head>
+
+<script type="text/javascript">
+  // Represent each point as a json object:
+  // {'time': time, 'value': value}
+  // where 'time' = time accessed and 'value' = the value of the key
+
+  var currentPoints = [];
+
+  // Returns true if the rectangle with firstPoint and secondPoint
+  // is unsatisfied and false otherwise.
+  // currentPoints is the set of points we currently have.
+  var unsatisfiedRectangle = function(firstPoint, secondPoint, currentPoints) {
+  		if (firstPoint == secondPoint) {
+  			return false;
+  		}
+  		// If they don't actually form a rectangle (they form a line),
+  		// this is by definition already satisfied
+  		if (firstPoint.value == secondPoint.value ||
+  			firstPoint.time == secondPoint.time) {
+  			return false;
+  		}
+
+  		var lowerTimeBound = Math.min(firstPoint.time, secondPoint.time);
+  		var upperTimeBound = Math.max(firstPoint.time, secondPoint.time);
+  		var lowerValueBound = Math.min(firstPoint.value, secondPoint.value);
+  		var upperValueBound = Math.max(firstPoint.value, secondPoint.value);
+
+  		var isUnsatisfied = true;
+  		currentPoints.forEach(function(point) {
+  			if (point == firstPoint || point == secondPoint) {
+  				// Shouldn't take into account itself
+
+  			} else if (lowerTimeBound <= point.time &&
+  				point.time <= upperTimeBound &&
+  				lowerValueBound <= point.value &&
+  				point.value <= upperValueBound) {
+  				// There's a point within the rectangle, so it's not unsatisfied
+  				isUnsatisfied = false;
+  			}
+  		});
+
+  		return isUnsatisfied;
+  	}
+
+  // Prints the points that satisfy the greedy geometric BST algorithm.
+  // searchPoints must be in order from smallest to largest value
+  var greedyGeometricBst = function(searchPoints) {
+
+  	if (searchPoints.length == 0) {
+  		// Base case: we're done searching
+  		var finalList = currentPoints.slice();
+  		console.log("final list:");
+  		console.log(finalList);
+  		// Reset current points so greedyGeometricBst can be called again.
+  		currentPoints = [];
+  		return;
+  	}
+
+  	var currentSearchPoint = searchPoints[0];
+
+  	// Add search point to our list
+  	currentPoints.push(currentSearchPoint);
+
+  	// See if there's any unsatisfied rectangles
+  	// If there are, satisfy them
+  	currentPoints.forEach(function(point) {
+  		if (unsatisfiedRectangle(point, currentSearchPoint, currentPoints)) {
+  				// If unsatisfied, must add a point
+  				// the point should be on the same row as the current
+  				// search point, so it should have the same time as
+  				// the other point
+  		 		var newPointValue = currentSearchPoint.value;
+  		 		var newPointTime = point.time;
+  		 		var newPoint = {
+  		 			'time': newPointTime,
+  		 			'value': newPointValue
+  		 		}
+  		 		currentPoints.push(newPoint);
+  		}
+  	});
+
+  	// Recurse with the next search point
+  	greedyGeometricBst(searchPoints.slice(1));
+
+  };
+
+  // Call function as an example
+  greedyGeometricBst([{'time': 3, 'value': 10},
+  					  {'time': 1, 'value': 20},
+  					  {'time': 4, 'value': 30},
+  					  {'time': 2, 'value': 40}]);
+
+  greedyGeometricBst([{'time': 5, 'value': 100},
+  					  {'time': 5, 'value': 200}]);
+
+</script>
+
+</head>
+
+<body>
+
+<p> 6.851 CO4 Coding: Implement geometric view of BSTs </p>
+
+<p> Caitlin Cassidy </p>
+
+<p> Use the console to try it out! The example from class: </p>
+
+<p>   greedyGeometricBst([{'time': 3, 'value': 10},
+  					  {'time': 1, 'value': 20},
+  					  {'time': 4, 'value': 30},
+  					  {'time': 2, 'value': 40}]); </p>
+
+</body>
