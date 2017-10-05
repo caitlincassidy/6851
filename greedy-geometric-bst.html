@@ -1,6 +1,18 @@
 <head>
 
+<link rel="stylesheet" href="greedy-geometric-bst.css"/>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+
 <script type="text/javascript">
+  // TODO: Write a better sleep function that can be used
+  // to animate the drawing of points
+  var sleep = function(sleepDuration) {
+    var now = new Date().getTime();
+    while(new Date().getTime() < now + sleepDuration) {
+    /* do nothing */
+    } 
+  }
+
   // Represent each point as a json object:
   // {'time': time, 'value': value}
   // where 'time' = time accessed and 'value' = the value of the key
@@ -43,9 +55,29 @@
   		return isUnsatisfied;
   	}
 
+
+  var drawPoint = function(canvas, currentSearchPoint, isOriginalPoint) {
+    var xCoordinate = currentSearchPoint.time;
+    var yCoordinate = canvas.height - currentSearchPoint.value;
+    var pointRadius = 5;
+
+    var ctx = canvas.getContext('2d');
+    if (isOriginalPoint) {
+      ctx.fillStyle = 'blue';
+    } else {
+      ctx.fillStyle = 'red';
+    }
+
+    ctx.beginPath();
+    ctx.arc(xCoordinate, yCoordinate, pointRadius, 0, 2*Math.PI, false);
+    ctx.fill();
+    ctx.closePath();
+  }
+
   // Prints the points that satisfy the greedy geometric BST algorithm.
+  // ctx is the canvas on which to draw the points
   // searchPoints must be in order from smallest to largest value
-  var greedyGeometricBst = function(searchPoints) {
+  var greedyGeometricBst = function(canvas, searchPoints) {
 
   	if (searchPoints.length == 0) {
   		// Base case: we're done searching
@@ -62,6 +94,9 @@
   	// Add search point to our list
   	currentPoints.push(currentSearchPoint);
 
+    // Draw this point on the canvas
+    drawPoint(canvas, currentSearchPoint, true);
+
   	// See if there's any unsatisfied rectangles
   	// If there are, satisfy them
   	currentPoints.forEach(function(point) {
@@ -77,22 +112,42 @@
   		 			'value': newPointValue
   		 		}
   		 		currentPoints.push(newPoint);
+          drawPoint(canvas, newPoint, false);
   		}
   	});
 
   	// Recurse with the next search point
-  	greedyGeometricBst(searchPoints.slice(1));
+  	greedyGeometricBst(canvas, searchPoints.slice(1));
 
   };
 
   // Call function as an example
-  greedyGeometricBst([{'time': 3, 'value': 10},
+  /*greedyGeometricBst([{'time': 3, 'value': 10},
   					  {'time': 1, 'value': 20},
   					  {'time': 4, 'value': 30},
   					  {'time': 2, 'value': 40}]);
 
   greedyGeometricBst([{'time': 5, 'value': 100},
-  					  {'time': 5, 'value': 200}]);
+  					  {'time': 5, 'value': 200}]);*/
+
+
+  $(document).ready(function() {
+    var canvas = document.getElementById('graph-canvas');
+    var ctx = canvas.getContext('2d');
+    canvas.width = "300";
+    canvas.height = "300";
+
+    console.log("starting greedy geometric bst");
+    var exampleArray =
+             [{'time': 30, 'value': 10},
+              {'time': 10, 'value': 20},
+              {'time': 40, 'value': 30},
+              {'time': 20, 'value': 40}];
+
+    greedyGeometricBst(canvas, exampleArray);
+
+  })
+
 
 </script>
 
@@ -110,5 +165,7 @@
   					  {'time': 1, 'value': 20},
   					  {'time': 4, 'value': 30},
   					  {'time': 2, 'value': 40}]); </p>
+
+<canvas id="graph-canvas"></canvas>
 
 </body>
