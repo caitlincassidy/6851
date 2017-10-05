@@ -96,6 +96,7 @@
     currentTotalTimeout += 1000;
 
     // Ensure firstPoint is the top left corner of the rectangle
+    // TODO: Rectangles aren't always top-left + bottom-right points
     if (secondPoint.value > firstPoint.value &&
         secondPoint.time < firstPoint.time) {
       var temp = firstPoint;
@@ -103,10 +104,11 @@
       secondPoint = temp;
     }
 
-    var xCoordinate = firstPoint.time;
-    var yCoordinate = canvas.height - firstPoint.value;
-    var width = secondPoint.time - firstPoint.time;
-    var height = firstPoint.value - secondPoint.value;
+    // Want to find top-left corner
+    var xCoordinate = Math.min(firstPoint.time, secondPoint.time);
+    var yCoordinate = canvas.height - Math.max(firstPoint.value, secondPoint.value);
+    var width = Math.abs(secondPoint.time - firstPoint.time);
+    var height = Math.abs(firstPoint.value - secondPoint.value);
 
     setTimeout(function() {
       ctx = canvas.getContext('2d');
@@ -120,6 +122,14 @@
     // Delete the rectangle at the same time as you add
     // the point the satisfies the rectangle
     setTimeout(function() {
+      console.log("first,second");
+      console.log(firstPoint);
+      console.log(secondPoint);
+      console.log("x,y,width,height");
+      console.log(xCoordinate);
+      console.log(yCoordinate);
+      console.log(width);
+      console.log(height);
       // TODO: Figure out what's the correct rectangle to clear
       // clear where the rectangle was
       ctx.clearRect(xCoordinate-1, yCoordinate-1, width+4, height+4);
@@ -192,17 +202,17 @@
   $(document).ready(function() {
     var canvas = document.getElementById('graph-canvas');
     var ctx = canvas.getContext('2d');
-    canvas.width = "300";
-    canvas.height = "300";
+    canvas.width = "500";
+    canvas.height = "500";
     //$('#graph-div').height(300);
     //$('#graph-div').width(300);
 
     console.log("starting greedy geometric bst");
     var exampleArray =
-             [{'time': 30, 'value': 10, 'isOriginalPoint': true},
-              {'time': 10, 'value': 20, 'isOriginalPoint': true},
-              {'time': 40, 'value': 30, 'isOriginalPoint': true},
-              {'time': 20, 'value': 40, 'isOriginalPoint': true}];
+             [{'time': 300, 'value': 100, 'isOriginalPoint': true},
+              {'time': 100, 'value': 200, 'isOriginalPoint': true},
+              {'time': 400, 'value': 300, 'isOriginalPoint': true},
+              {'time': 200, 'value': 400, 'isOriginalPoint': true}];
 
     greedyGeometricBst(canvas, exampleArray);
 
