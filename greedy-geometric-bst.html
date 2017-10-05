@@ -14,8 +14,9 @@
   }
 
   // Represent each point as a json object:
-  // {'time': time, 'value': value}
-  // where 'time' = time accessed and 'value' = the value of the key
+  // {'time': time, 'value': value, 'isOriginalPoint': boolean}
+  // where 'time' = time accessed and 'value' = the value of the key and 'isOriginalPoint' is true if the point
+  // was in the original set of search points.
 
   var currentPoints = [];
 
@@ -60,38 +61,58 @@
   // before showing up
   var currentTotalTimeout = 0;
 
-  var drawPoint = function(canvas, currentSearchPoint, isOriginalPoint) {
+  // Draw a point during the normal animation --
+  // use this if you're drawing a point for the first time.
+  var drawPointAnimated = function(canvas, currentSearchPoint) {
     currentTotalTimeout += 1000;
     setTimeout(function() {
-      var xCoordinate = currentSearchPoint.time;
-      var yCoordinate = canvas.height - currentSearchPoint.value;
-
-      var pointRadius = 5;
-
-      var ctx = canvas.getContext('2d');
-      if (isOriginalPoint) {
-        ctx.fillStyle = 'blue';
-      } else {
-        ctx.fillStyle = 'red';
-      }
-
-      ctx.beginPath();
-      ctx.arc(xCoordinate, yCoordinate, pointRadius, 0, 2*Math.PI, false);
-      ctx.fill();
-      ctx.closePath();
+      drawPoint(canvas, currentSearchPoint);
     }, currentTotalTimeout);
-    
+  }
+
+  // Draw a point immediately on the canvas.
+  // Use this *only* to redraw points that have been
+  // previously drawn.
+  var drawPoint = function(canvas, currentSearchPoint) {    
+    var xCoordinate = currentSearchPoint.time;
+    var yCoordinate = canvas.height - currentSearchPoint.value;
+
+    var pointRadius = 5;
+
+    var ctx = canvas.getContext('2d');
+    if (currentSearchPoint.isOriginalPoint) {
+      ctx.fillStyle = 'blue';
+    } else {
+      ctx.fillStyle = 'red';
+    }
+
+    ctx.beginPath();
+    ctx.arc(xCoordinate, yCoordinate, pointRadius, 0, 2*Math.PI, false);
+    ctx.fill();
+    ctx.closePath();
   }
 
   var drawUnsatisfiedRectangle = function(canvas, firstPoint, secondPoint) {
     currentTotalTimeout += 1000;
+
+    // Ensure firstPoint is the top left corner of the rectangle
+    if (secondPoint.value > firstPoint.value &&
+        secondPoint.time < firstPoint.time) {
+      var temp = firstPoint;
+      firstPoint = secondPoint;
+      secondPoint = temp;
+    }
+
+    var xCoordinate = firstPoint.time;
+    var yCoordinate = canvas.height - firstPoint.value;
+    var width = secondPoint.time - firstPoint.time;
+    var height = firstPoint.value - secondPoint.value;
+
     setTimeout(function() {
-      var xCoordinate = firstPoint.time;
-      var yCoordinate = canvas.height - firstPoint.value;
-      var width = secondPoint.time - firstPoint.time;
-      var height = firstPoint.value - secondPoint.value;
       ctx = canvas.getContext('2d');
       ctx.strokeStyle = 'green';
+      ctx.fillStyle = 'green';
+      ctx.strokeWidth = 1;
       ctx.strokeRect(xCoordinate, yCoordinate, width, height);
     },
     currentTotalTimeout);
@@ -99,7 +120,12 @@
     // Delete the rectangle at the same time as you add
     // the point the satisfies the rectangle
     setTimeout(function() {
-      // TODO
+      // TODO: Figure out what's the correct rectangle to clear
+      // clear where the rectangle was
+      ctx.clearRect(xCoordinate-1, yCoordinate-1, width+4, height+4);
+      // Redraw its corners
+      drawPoint(canvas, firstPoint);
+      drawPoint(canvas, secondPoint);
     },
     currentTotalTimeout + 1000);
   }
@@ -125,7 +151,7 @@
   	currentPoints.push(currentSearchPoint);
 
     // Draw this point on the canvas
-    drawPoint(canvas, currentSearchPoint, true);
+    drawPointAnimated(canvas, currentSearchPoint, true);
 
   	// See if there's any unsatisfied rectangles
   	// If there are, satisfy them
@@ -140,10 +166,11 @@
   		 		var newPointTime = point.time;
   		 		var newPoint = {
   		 			'time': newPointTime,
-  		 			'value': newPointValue
+  		 			'value': newPointValue,
+            'isOriginalPoint': false,
   		 		}
   		 		currentPoints.push(newPoint);
-          drawPoint(canvas, newPoint, false);
+          drawPointAnimated(canvas, newPoint, false);
   		}
   	});
 
@@ -172,10 +199,10 @@
 
     console.log("starting greedy geometric bst");
     var exampleArray =
-             [{'time': 30, 'value': 10},
-              {'time': 10, 'value': 20},
-              {'time': 40, 'value': 30},
-              {'time': 20, 'value': 40}];
+             [{'time': 30, 'value': 10, 'isOriginalPoint': true},
+              {'time': 10, 'value': 20, 'isOriginalPoint': true},
+              {'time': 40, 'value': 30, 'isOriginalPoint': true},
+              {'time': 20, 'value': 40, 'isOriginalPoint': true}];
 
     greedyGeometricBst(canvas, exampleArray);
 
