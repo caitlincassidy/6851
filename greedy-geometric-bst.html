@@ -182,23 +182,68 @@
   greedyGeometricBst([{'time': 5, 'value': 100},
   					  {'time': 5, 'value': 200}]);*/
 
+  var animateAlgorithm = function(points) {
+      // Display all points for 1.5 seconds
+      var canvas = document.getElementById('graph-canvas');
+      var ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      points.forEach(function(point) {
+        drawPoint(canvas, point);
+      });
+      setTimeout(function() {
+        // Run the algorithm
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        currentPoints = [];
+        // TODO: Would need to 'stop' the other animations
+        // or disable the button until the original animation
+        // is finished
+        currentTotalTimeout = 0;
+
+        greedyGeometricBst(canvas, points);
+      }, 1500);
+  }
 
   $(document).ready(function() {
     var canvas = document.getElementById('graph-canvas');
-    var ctx = canvas.getContext('2d');
     canvas.width = "500";
     canvas.height = "500";
 
-    var exampleArray =
-             [{'time': 300, 'value': 100, 'isOriginalPoint': true},
-              {'time': 100, 'value': 200, 'isOriginalPoint': true},
-              {'time': 400, 'value': 300, 'isOriginalPoint': true},
-              {'time': 200, 'value': 400, 'isOriginalPoint': true}];
+    
+    $('#class-example-button').on('click', function() {
+      var examplePoints =
+               [{'time': 300, 'value': 100, 'isOriginalPoint': true},
+                {'time': 100, 'value': 200, 'isOriginalPoint': true},
+                {'time': 400, 'value': 300, 'isOriginalPoint': true},
+                {'time': 200, 'value': 400, 'isOriginalPoint': true}];
+      animateAlgorithm(examplePoints);
+    });
 
-    greedyGeometricBst(canvas, exampleArray);
 
-  })
+    $('#animate-button').on('click', function() {
+      var numRandomPoints = $('#num-random-points').val();
+      console.log(numRandomPoints);
+      var points = [];
+      for (var i = 0; i < numRandomPoints; i++) {
+        var time = Math.ceil(Math.random() * 500);
+        var value = Math.ceil(Math.random() * 500);
+        var point = {
+          'time': time,
+          'value': value,
+          'isOriginalPoint': true,
+        };
+        points.push(point);
+      }
 
+      // Sort points by value, smallest to largest
+      points.sort(function(elt1, elt2) {
+        return elt1.value - elt2.value;
+      });
+
+      animateAlgorithm(points);
+    });
+  });
 
 </script>
 
@@ -210,12 +255,13 @@
 
 <p> Caitlin Cassidy </p>
 
-<p> This animated example uses the example from class: </p>
+<button id="class-example-button">Animate Class Example</button>
 
-<p>   greedyGeometricBst([{'time': 300, 'value': 100},
-  					  {'time': 100, 'value': 200},
-  					  {'time': 400, 'value': 300},
-  					  {'time': 200, 'value': 400}]); </p>
+Animate a random number of nodes:
+<input id="num-random-points" type="text" /> 
+<button id="animate-button">Animate</button>
+
+<!-- TODO: Add pause/fast-foward buttons -->
 
 <canvas id="graph-canvas"></canvas>
 
