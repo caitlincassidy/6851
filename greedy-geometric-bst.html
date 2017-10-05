@@ -56,22 +56,31 @@
   	}
 
 
+  // Stores how long the next item should wait
+  // before showing up
+  var currentTotalTimeout = 0;
+
   var drawPoint = function(canvas, currentSearchPoint, isOriginalPoint) {
-    var xCoordinate = currentSearchPoint.time;
-    var yCoordinate = canvas.height - currentSearchPoint.value;
-    var pointRadius = 5;
+    currentTotalTimeout += 1000;
+    setTimeout(function() {
+      var xCoordinate = currentSearchPoint.time;
+      var yCoordinate = canvas.height - currentSearchPoint.value;
+      
+      var pointRadius = 5;
 
-    var ctx = canvas.getContext('2d');
-    if (isOriginalPoint) {
-      ctx.fillStyle = 'blue';
-    } else {
-      ctx.fillStyle = 'red';
-    }
+      var ctx = canvas.getContext('2d');
+      if (isOriginalPoint) {
+        ctx.fillStyle = 'blue';
+      } else {
+        ctx.fillStyle = 'red';
+      }
 
-    ctx.beginPath();
-    ctx.arc(xCoordinate, yCoordinate, pointRadius, 0, 2*Math.PI, false);
-    ctx.fill();
-    ctx.closePath();
+      ctx.beginPath();
+      ctx.arc(xCoordinate, yCoordinate, pointRadius, 0, 2*Math.PI, false);
+      ctx.fill();
+      ctx.closePath();
+    }, currentTotalTimeout);
+    
   }
 
   // Prints the points that satisfy the greedy geometric BST algorithm.
@@ -136,6 +145,8 @@
     var ctx = canvas.getContext('2d');
     canvas.width = "300";
     canvas.height = "300";
+    //$('#graph-div').height(300);
+    //$('#graph-div').width(300);
 
     console.log("starting greedy geometric bst");
     var exampleArray =
@@ -167,5 +178,7 @@
   					  {'time': 2, 'value': 40}]); </p>
 
 <canvas id="graph-canvas"></canvas>
+
+<!--<div id="graph-div"></div>-->
 
 </body>
