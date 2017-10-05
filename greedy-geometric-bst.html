@@ -65,7 +65,7 @@
     setTimeout(function() {
       var xCoordinate = currentSearchPoint.time;
       var yCoordinate = canvas.height - currentSearchPoint.value;
-      
+
       var pointRadius = 5;
 
       var ctx = canvas.getContext('2d');
@@ -81,6 +81,27 @@
       ctx.closePath();
     }, currentTotalTimeout);
     
+  }
+
+  var drawUnsatisfiedRectangle = function(canvas, firstPoint, secondPoint) {
+    currentTotalTimeout += 1000;
+    setTimeout(function() {
+      var xCoordinate = firstPoint.time;
+      var yCoordinate = canvas.height - firstPoint.value;
+      var width = secondPoint.time - firstPoint.time;
+      var height = firstPoint.value - secondPoint.value;
+      ctx = canvas.getContext('2d');
+      ctx.strokeStyle = 'green';
+      ctx.strokeRect(xCoordinate, yCoordinate, width, height);
+    },
+    currentTotalTimeout);
+
+    // Delete the rectangle at the same time as you add
+    // the point the satisfies the rectangle
+    setTimeout(function() {
+      // TODO
+    },
+    currentTotalTimeout + 1000);
   }
 
   // Prints the points that satisfy the greedy geometric BST algorithm.
@@ -110,6 +131,7 @@
   	// If there are, satisfy them
   	currentPoints.forEach(function(point) {
   		if (unsatisfiedRectangle(point, currentSearchPoint, currentPoints)) {
+          drawUnsatisfiedRectangle(canvas, point, currentSearchPoint);
   				// If unsatisfied, must add a point
   				// the point should be on the same row as the current
   				// search point, so it should have the same time as
