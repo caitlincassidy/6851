@@ -4,23 +4,25 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 
 <script type="text/javascript">
-  // TODO: Write a better sleep function that can be used
-  // to animate the drawing of points
-  var sleep = function(sleepDuration) {
-    var now = new Date().getTime();
-    while(new Date().getTime() < now + sleepDuration) {
-    /* do nothing */
-    } 
-  }
+  // TODO: Move time to the y-axis and value to the x-axis
+  // TODO: Allow option to randomize the points
+  //       - Could input desired number of points?
 
   // Represent each point as a json object:
-  // {'time': time, 'value': value, 'isOriginalPoint': boolean}
-  // where 'time' = time accessed and 'value' = the value of the key and 'isOriginalPoint' is true if the point
-  // was in the original set of search points.
+  // {'time': time, 'value': value, 'isOriginalPoint': boolean} where:
+  // 'time' = time accessed
+  // 'value' = the value of the key
+  // 'isOriginalPoint' is true if the point was in the 
+  //   original set of search points.
 
+  // Stores the current set of points in our graph
   var currentPoints = [];
 
-  // Returns true if the rectangle with firstPoint and secondPoint
+  // Stores how long the next item should wait before appearing
+  // Used to ensure points and rectangles show up sequentially
+  var currentTotalTimeout = 0;
+
+  // Returns true if the rectangle with firstPoint and secondPoint as corners
   // is unsatisfied and false otherwise.
   // currentPoints is the set of points we currently have.
   var unsatisfiedRectangle = function(firstPoint, secondPoint, currentPoints) {
@@ -56,11 +58,6 @@
   		return isUnsatisfied;
   	}
 
-
-  // Stores how long the next item should wait
-  // before showing up
-  var currentTotalTimeout = 0;
-
   // Draw a point during the normal animation --
   // use this if you're drawing a point for the first time.
   var drawPointAnimated = function(canvas, currentSearchPoint) {
@@ -76,10 +73,10 @@
   var drawPoint = function(canvas, currentSearchPoint) {    
     var xCoordinate = currentSearchPoint.time;
     var yCoordinate = canvas.height - currentSearchPoint.value;
-
     var pointRadius = 5;
 
     var ctx = canvas.getContext('2d');
+    // Color original points vs. new points differently
     if (currentSearchPoint.isOriginalPoint) {
       ctx.fillStyle = 'blue';
     } else {
@@ -92,55 +89,39 @@
     ctx.closePath();
   }
 
+  // Draw an unsatisfied rectangles on canvas with corners at
+  // firstPoint and secondPoint
   var drawUnsatisfiedRectangle = function(canvas, firstPoint, secondPoint) {
     currentTotalTimeout += 1000;
 
-    // Ensure firstPoint is the top left corner of the rectangle
-    // TODO: Rectangles aren't always top-left + bottom-right points
-    if (secondPoint.value > firstPoint.value &&
-        secondPoint.time < firstPoint.time) {
-      var temp = firstPoint;
-      firstPoint = secondPoint;
-      secondPoint = temp;
-    }
-
-    // Want to find top-left corner
+    // Use top-left corner
     var xCoordinate = Math.min(firstPoint.time, secondPoint.time);
     var yCoordinate = canvas.height - Math.max(firstPoint.value, secondPoint.value);
     var width = Math.abs(secondPoint.time - firstPoint.time);
     var height = Math.abs(firstPoint.value - secondPoint.value);
 
+    // Draw the rectangle
     setTimeout(function() {
       ctx = canvas.getContext('2d');
       ctx.strokeStyle = 'green';
-      ctx.fillStyle = 'green';
       ctx.strokeWidth = 1;
       ctx.strokeRect(xCoordinate, yCoordinate, width, height);
     },
     currentTotalTimeout);
 
     // Delete the rectangle at the same time as you add
-    // the point the satisfies the rectangle
+    // the point that satisfies the rectangle
     setTimeout(function() {
-      console.log("first,second");
-      console.log(firstPoint);
-      console.log(secondPoint);
-      console.log("x,y,width,height");
-      console.log(xCoordinate);
-      console.log(yCoordinate);
-      console.log(width);
-      console.log(height);
-      // TODO: Figure out what's the correct rectangle to clear
-      // clear where the rectangle was
       ctx.clearRect(xCoordinate-1, yCoordinate-1, width+4, height+4);
-      // Redraw its corners
+      // Redraw the rectangle's corners, since the clearRect
+      // will clear part of the original points
       drawPoint(canvas, firstPoint);
       drawPoint(canvas, secondPoint);
     },
     currentTotalTimeout + 1000);
   }
 
-  // Prints the points that satisfy the greedy geometric BST algorithm.
+  // Animates the greedy geometric BST algorithm.
   // ctx is the canvas on which to draw the points
   // searchPoints must be in order from smallest to largest value
   var greedyGeometricBst = function(canvas, searchPoints) {
@@ -167,7 +148,9 @@
   	// If there are, satisfy them
   	currentPoints.forEach(function(point) {
   		if (unsatisfiedRectangle(point, currentSearchPoint, currentPoints)) {
+          // Show the unsatisfied rectangle
           drawUnsatisfiedRectangle(canvas, point, currentSearchPoint);
+
   				// If unsatisfied, must add a point
   				// the point should be on the same row as the current
   				// search point, so it should have the same time as
@@ -204,10 +187,7 @@
     var ctx = canvas.getContext('2d');
     canvas.width = "500";
     canvas.height = "500";
-    //$('#graph-div').height(300);
-    //$('#graph-div').width(300);
 
-    console.log("starting greedy geometric bst");
     var exampleArray =
              [{'time': 300, 'value': 100, 'isOriginalPoint': true},
               {'time': 100, 'value': 200, 'isOriginalPoint': true},
@@ -229,15 +209,14 @@
 
 <p> Caitlin Cassidy </p>
 
-<p> Use the console to try it out! The example from class: </p>
+<p> This animated example uses the example from class: </p>
 
-<p>   greedyGeometricBst([{'time': 3, 'value': 10},
-  					  {'time': 1, 'value': 20},
-  					  {'time': 4, 'value': 30},
-  					  {'time': 2, 'value': 40}]); </p>
+<p>   greedyGeometricBst([{'time': 300, 'value': 100},
+  					  {'time': 100, 'value': 200},
+  					  {'time': 400, 'value': 300},
+  					  {'time': 200, 'value': 400}]); </p>
 
 <canvas id="graph-canvas"></canvas>
 
-<!--<div id="graph-div"></div>-->
 
 </body>
